@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <script>
+
+        fetch("Parcels_2016_Data_Full.geojson")
+            .then(res => res.json())
+            .then(function(data){
+                var actualdata = data.features;
+                var parking = actualdata.filter(function(el){
+                    return parseInt(el.properties.PTYPE)<200 && parseInt(el.properties.U_NUM_PARK)>=0;
+                })
+                function download(content, fileName, contentType) {
+                    var a = document.createElement("a");
+                    var file = new Blob([content], {type: contentType});
+                    a.href = URL.createObjectURL(file);
+                    a.download = fileName;
+                    a.click();
+                }
+                var jsonData = JSON.stringify(parking);
+                download(jsonData, 'filteredgeojson.json', 'json');
+            });
+    </script>
+</html>

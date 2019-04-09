@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- load css-->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+    integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+    crossorigin=""/>
+    <link href="https://fonts.googleapis.com/css?family=Quicksand" rel="stylesheet">
+    <!-- css styling -->
+    <style>
+    #mapid { height: 500px; 
+    }
+    body {
+        font-family: 'Quicksand', sans-serif;
+        text-align: center;
+    }
+    </style>
+    <!-- load js and jquery-->
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+    integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+    crossorigin=""></script>
+ 
+<title>City of Boston</title>
+</head>
+<body>
+    <h1>City of Boston</h1>
+    <p>Leaflet Map</p>
+        <div id="mapid"></div>
+
+
+    <script>
+        // initialize the map
+        var mymap = L.map('mapid').setView([42.36, -71.058], 14);
+        // load a tile layer
+        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=sk.eyJ1IjoiYW5uaWUxYmx1ZSIsImEiOiJjanQxdGw2OGMwOWFuNDRvdnZjYXdtdHNmIn0.Y6hDtqxkSn_R-zR2blXYcQ', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 19,
+            id: 'mapbox.streets',
+            accessToken: 'your.mapbox.access.token'
+            }).addTo(mymap);
+            
+        fetch("Parcels_2016_Data_Full.geojson")
+            .then(res => res.json())
+            .then(function(data){
+                //console.log(data)
+                var actualdata = data.features
+                //var noncommercial = actualdata.filter(function(el){
+                //    return el.properties.LU!='Commercial'
+                //})
+                var residential = actualdata.filter(function(el){
+                    return parseInt(el.properties.PTYPE)<200 && !(parseInt(el.properties.U_NUM_PARK)>=0);
+                })
+                var parking = actualdata.filter(function(el){
+                    return parseInt(el.properties.PTYPE)<200 && !(parseInt(el.properties.U_NUM_PARK)>=0);
+                })
+                // console.log(parking)
+                L.geoJson(residential).addTo(mymap);
+                //L.geoJson(parking).addTo(mymap);
+            })
+        /*
+        $.getJSON("Parcels_2016_Data_Full.geojson",function(Data){
+        L.geoJson( Data  , {
+            style: function(feature){
+            var fillColor,
+                residential_Type = feature.properties.LU;
+            if ( residential_Type != 'Commercial' ) fillColor = "#006837";
+            return { color: "#999", weight: 1, fillColor: fillColor, fillOpacity: .6 };
+            },
+            onEachFeature: function( feature, layer ){
+            layer.bindPopup( "<br/>" + feature.properties.LU + " is a residential area." )
+            }
+        }  ).addTo(mymap);
+        });
+        */
+        /* // load GeoJSON from an external file
+        $.getJSON("Parcels_2016_Data_Full.geojson",function(data){
+        // add GeoJSON layer to the map once the file is loaded
+            L.geoJson(data).addTo(mymap);
+        }); */
+
+        var popup = L.popup()
+        .setLatLng([42.36, -71.058])
+        .setContent("City of Boston")
+        .openOn(mymap);
+        
+        function onMapClick(e) {
+        popup
+            .setLatLng(e.latlng)
+            .setContent("You clicked the map at " + e.latlng.toString())
+            .openOn(mymap);
+        }
+        mymap.on('click', onMapClick);
+        
+
+    </script>
+</body>
+</html>
